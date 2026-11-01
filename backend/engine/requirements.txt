@@ -1,0 +1,10 @@
+# Core 3D Geometry and Image Processing
+numpy>=1.24.0
+scipy>=1.10.0
+scikit-image>=0.21.0
+trimesh[easy]>=4.0.0
+Pillow>=10.0.0
+
+# PyTorch (runs CPU locally, and CUDA on AWS G4dn with NVIDIA T4)
+torch>=2.0.0
+torchvision>=0.15.0

@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: dishviz-backend
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_ORIGIN
+        sync: false
+        placeholder: "https://your-frontend.vercel.app"
+      - key: DATABASE_URL
+        value: file:./prod.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: AR_PROVIDER
+        value: unconfigured
+      - key: AR_PROVIDER_API_KEY
+        sync: false
+        placeholder: "Tripo3D API key (if AR_PROVIDER=tripo3d)"
+      - key: TRIPOSR_ENDPOINT
+        sync: false
+        placeholder: "Self-hosted TripoSR URL (if AR_PROVIDER=triposr)"
+      - key: STORAGE_PROVIDER
+        value: local
+      - key: STORAGE_LOCAL_PATH
+        value: ./uploads
+      - key: MASTER_INTERNAL_SECRET
+        generateValue: true
+      - key: COOKIE_CROSS_SITE
+        value: "true"

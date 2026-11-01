@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+dist-ssr/
+frontend/dist/
+backend/dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+frontend/.env.local
+backend/.env
+
+# Local Databases & storage
+*.db
+*.db-journal
+backend/dev.db
+backend/prod.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Python engine venv
+engine/venv/
+backend/engine/venv/
+backend/engine/**/__pycache__/
+*.pyc
+
+# Logs & stackdumps
+*.log
+*.stackdump
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

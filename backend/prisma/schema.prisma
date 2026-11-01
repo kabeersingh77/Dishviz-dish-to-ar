@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  name         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription   Subscription?
+  usage          Usage?
+  creditBalance  Float          @default(0.0)
+  creditLedgers  CreditLedger[]
+  jobs           ARJob[]
+  apiKeys        ApiKey[]
+  consents       ConsentRecord[]
+  webhookEvents  WebhookEvent[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+}
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // "web_app" | "developer_api"
+  plan   String
+  // "trialing" | "active" | "past_due" | "canceled"
+  status String
+
+  stripeCustomerId     String?
+  stripeSubscriptionId String? @unique
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Usage {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  trialGenerationsUsed Int      @default(0)
+  apiRequestsThisMonth Int      @default(0)
+  apiRequestsResetAt   DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model ARJob {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Job lifecycle status
+  // queued | preparing_images | segmenting_subject | uploading_photos |
+  // analyzing_views | reconstructing_object | generating_3d_model |
+  // optimizing_model | preparing_ar | ready | failed
+  status String @default("queued")
+
+  // AR provider task tracking
+  provider       String?
+  providerJobId  String?
+  providerTaskId String?
+
+  // Segmentation
+  // "smart" | "dish_only" | "custom"
+  segmentationMode       String  @default("smart")
+  segmentationProvider   String?
+  segmentationConfidence Float?
+  // JSON array of detected object labels
+  detectedObjects        String?
+  segmentationConfirmed  Boolean @default(false)
+
+  // User-safe error info only
+  errorMessage String?
+  errorCode    String?
+
+  // Asset visibility: "private" | "unlisted" | "public"
+  visibility String @default("private")
+  version    Int    @default(1)
+
+  // Domain-specific metadata (food dishes, products)
+  itemName         String?
+  itemDescription  String?
+  itemTasteProfile String?
+  itemCategory     String?
+  itemPrice        Float?
+  idempotencyKey   String?  @unique
+  apiTier          String   @default("public") // "public" | "master_internal"
+  webhookUrl       String?
+
+  inputAssets   Asset[]       @relation("InputAssets")
+  outputAssets  Asset[]       @relation("OutputAssets")
+  consentRecord ConsentRecord?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+}
+
+model Asset {
+  id String @id @default(cuid())
+
+  inputJobId String?
+  inputJob   ARJob?  @relation("InputAssets", fields: [inputJobId], references: [id], onDelete: Cascade)
+
+  outputJobId String?
+  outputJob   ARJob?  @relation("OutputAssets", fields: [outputJobId], references: [id], onDelete: Cascade)
+
+  // "input_image" | "segmented_image" | "glb" | "usdz" | "thumbnail"
+  type        String
+  storagePath String?
+  storageKey  String?
+  mimeType    String
+  sizeBytes   Int
+  width       Int?
+  height      Int?
+
+  // Asset visibility: "private" | "unlisted" | "public"
+  visibility String @default("private")
+  version    Int    @default(1)
+
+  createdAt DateTime @default(now())
+}
+
+
+model ApiKey {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+
+  // SHA-256 hash of the full key — full key shown only once at generation
+  keyHash String @unique
+  // First 16 chars for dashboard display, e.g. "oar_live_a1b2c3d"
+  keyPrefix String
+
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model ConsentRecord {
+  id String @id @default(cuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  jobId String? @unique
+  job   ARJob?  @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  // "photo_processing" | "cookie_analytics" | "cookie_preferences"
+  consentType   String
+  policyVersion String
+
+  // Hashed IP — do not store raw IP in consent records
+  ipHash    String?
+  userAgent String?
+
+  grantedAt DateTime @default(now())
+}
+
+model WebhookEvent {
+  id String @id @default(cuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // "stripe"
+  provider  String
+  eventType String
+  // Idempotency key — prevents duplicate processing
+  eventId   String  @unique
+
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model CreditLedger {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount       Float
+  type         String   // "topup" | "job_charge" | "job_refund" | "adjustment"
+  jobId        String?
+  description  String
+  balanceAfter Float
+  createdAt    DateTime @default(now())
+}

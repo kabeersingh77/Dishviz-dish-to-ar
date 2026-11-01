@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# TypeScript build output
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Databases & local storage
+*.db
+*.db-journal
+dev.db
+prod.db
+uploads/*
+!uploads/.gitkeep
+
+# Python engine venv (if created locally)
+engine/venv/
+engine/**/__pycache__/
+*.pyc
+
+# Logs & dumps
+*.log
+*.stackdump
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
