@@ -27,7 +27,7 @@ app.use(
 // ─── CORS ──────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
 
@@ -73,7 +73,7 @@ app.use(cookieParser());
 app.use(
   express.json({
     limit: '1mb',
-    verify: (req: any, _res, buf) => {
+    verify: (req: any, _res: express.Response, buf: Buffer) => {
       req.rawBody = buf;
     },
   })
@@ -96,7 +96,7 @@ app.use('/api/internal/v1/ar', requireMasterAuth, masterArRoutes);
 app.use('/api/v1', apiRoutes);
 
 // ─── Health check ──────────────────────────────────────────────────────────
-app.get('/health', (_req, res) => {
+app.get('/health', (_req: express.Request, res: express.Response) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -105,7 +105,7 @@ app.get('/health', (_req, res) => {
 });
 
 // ─── 404 ───────────────────────────────────────────────────────────────────
-app.use((_req, res) => {
+app.use((_req: express.Request, res: express.Response) => {
   res.status(404).json({ error: 'Not found' });
 });
 

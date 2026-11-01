@@ -19,7 +19,7 @@ If your repository includes `render.yaml`:
 2. Connect your Git repository (set **Root Directory** to `backend` if deploying from monorepo).
 3. Configure the service:
    - **Environment**: `Node`
-   - **Build Command**: `npm install && npx prisma generate && npx prisma db push && npm run build`
+   - **Build Command**: `npm install --include=dev && npx prisma generate && npx prisma db push && npm run build`
    - **Start Command**: `npm start`
 4. Add Environment Variables:
    | Key | Value | Note |

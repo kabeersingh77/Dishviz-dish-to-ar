@@ -23,7 +23,7 @@ This guide provides complete instructions for deploying the separated frontend a
 4. If deploying from a monorepo, set **Root Directory** to `backend`.
 5. Set:
    - **Environment**: `Node`
-   - **Build Command**: `npm install && npx prisma generate && npx prisma db push && npm run build`
+   - **Build Command**: `npm install --include=dev && npx prisma generate && npx prisma db push && npm run build`
    - **Start Command**: `npm start`
    - **Health Check Path**: `/health`
 6. Add the following **Environment Variables**:
